@@ -148,6 +148,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\shaders\Shader.shader" />
     <None Include="src\SampleFragmentShader.fragmentshader" />
     <None Include="src\SampleVertexShader.vertexshader" />
   </ItemGroup>

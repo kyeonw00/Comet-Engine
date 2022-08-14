@@ -8,27 +8,71 @@
 
 using namespace std;
 
-static string LoadShaderCode(const char* shader_file_path)
+struct ShaderProgramSource
 {
-    string ShaderCode;
-    ifstream ShaderStream(shader_file_path, ios::in);
+    string VertexSource;
+    string FragmentSource;
+};
 
-    if (ShaderStream.is_open())
+static ShaderProgramSource ParseShader(const char* shader_file_path)
+{
+    // TODO: Specification for shader file that contains both of Vertex and Fragment shader
+
+    enum class EShaderType
     {
-        stringstream StringStream;
-        StringStream << ShaderStream.rdbuf();
-        ShaderCode = StringStream.str();
-        ShaderStream.close();
-    }
-    else
+        NONE = -1, VERTEX = 0, FRAGMENT = 1,
+    };
+
+    ifstream ShaderFileStream(shader_file_path, ios::in);
+    stringstream ShaderCodeStream[2];
+    string line;
+    EShaderType CurrentShaderType = EShaderType::NONE;
+
+    while (getline(ShaderFileStream, line))
     {
-        cout << "Impossible to open " << shader_file_path << ". Check the given source path." << endl;
-        getchar();
-        return "";
+        if (line.find("#shader") != string::npos)
+        {
+            if (line.find("vertex") != string::npos)
+            {
+                // set mode to vertex
+                CurrentShaderType = EShaderType::VERTEX;
+            }
+            else if (line.find("fragment") != string::npos)
+            {
+                // set mode to fragment
+                CurrentShaderType = EShaderType::FRAGMENT;
+            }
+        }
+        else
+        {
+            ShaderCodeStream[(int)CurrentShaderType] << line << "\n";
+        }
     }
 
-    return ShaderCode;
+    return { ShaderCodeStream[0].str(), ShaderCodeStream[1].str() };
 }
+
+//static string LoadShaderCode(const char* shader_file_path)
+//{
+//    string ShaderCode;
+//    ifstream ShaderStream(shader_file_path, ios::in);
+//
+//    if (ShaderStream.is_open())
+//    {
+//        stringstream StringStream;
+//        StringStream << ShaderStream.rdbuf();
+//        ShaderCode = StringStream.str();
+//        ShaderStream.close();
+//    }
+//    else
+//    {
+//        cout << "Impossible to open " << shader_file_path << ". Check the given source path." << endl;
+//        getchar();
+//        return "";
+//    }
+//
+//    return ShaderCode;
+//}
 
 static unsigned int CompileShader(const unsigned int type, const string& source)
 {
@@ -121,9 +165,13 @@ int main(void)
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
 
-    string vertexShader = LoadShaderCode(".\\src\\SampleVertexShader.vertexshader");
-    string fragmentShader = LoadShaderCode(".\\src\\SampleFragmentShader.fragmentshader");
-    unsigned int shader = CreateShader(vertexShader, fragmentShader);
+    ShaderProgramSource ShaderSource = ParseShader("res\\shaders\\Shader.shader");
+    cout << "Vertex" << endl;
+    cout << ShaderSource.VertexSource << endl;
+    cout << "Fragment" << endl;
+    cout << ShaderSource.FragmentSource << endl;
+
+    unsigned int shader = CreateShader(ShaderSource.VertexSource, ShaderSource.FragmentSource);
 
     glUseProgram(shader);
 

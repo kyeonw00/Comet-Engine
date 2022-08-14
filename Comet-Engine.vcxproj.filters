@@ -22,5 +22,6 @@
   <ItemGroup>
     <None Include="src\SampleVertexShader.vertexshader" />
     <None Include="src\SampleFragmentShader.fragmentshader" />
+    <None Include="res\shaders\Shader.shader" />
   </ItemGroup>
 </Project>
